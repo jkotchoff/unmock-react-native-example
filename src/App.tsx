@@ -3,6 +3,7 @@ import {Button, StyleSheet, View, Text} from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import unmock from 'unmock-browser';
 import {u, UnmockPackage} from 'unmock';
+import axios from 'axios';
 
 const useUnmock = process.env.NODE_ENV === 'development';
 
@@ -15,8 +16,7 @@ export const mockCatFactAPI = (unmock: UnmockPackage) => {
   unmock
     .nock(CAT_FACT_API_URL, 'catFactApi')
     .get(CAT_FACT_PATH)
-    .reply(200, {text: u.string('lorem.sentence')})
-    .reply(500, 'Internal server error');
+    .reply(200, {text: u.string('lorem.sentence')});
 };
 
 if (useUnmock) {
@@ -25,12 +25,11 @@ if (useUnmock) {
 
 const fetchFact = async () => {
   const CAT_FACT_URL = `${CAT_FACT_API_URL}${CAT_FACT_PATH}`;
-  const fetchResult = await fetch(CAT_FACT_URL);
-  if (!fetchResult.ok) {
+  const fetchResult = await axios(CAT_FACT_URL);
+  if (fetchResult.status != 200) {
     throw Error(`Failed fetching cat fact with code: ${fetchResult.status}`);
   }
-  const body = await fetchResult.json();
-  const fact = body.text;
+  const fact = fetchResult.data.text;
   console.log(`Got a new fact: ${fact}`);
   return fact;
 };
